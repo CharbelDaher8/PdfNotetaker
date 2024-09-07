@@ -1,19 +1,22 @@
 using Microsoft.Web.WebView2.WinForms;
 using System.Windows.Forms;
 using System.Xml;
+using System.Security.AccessControl;
+
 
 namespace PdfNotetaker
 {
     public partial class Form1 : Form
     {
         string _folderPath = "";
+        string _noteSavePath = ""; 
         private bool isFormatting;
         private bool isDarkMode;
 
         public Form1()
         {
             InitializeComponent();
-            webView21.Source = new Uri("C:\\Users\\Work 3\\Downloads\\Lasch_Christopher_The_Culture_of_Narcissism.pdf");
+            //webView21.Source = new Uri("C:\\Users\\Work 3\\Downloads\\Lasch_Christopher_The_Culture_of_Narcissism.pdf");
 
         }
 
@@ -32,15 +35,12 @@ namespace PdfNotetaker
                 string selectedFilePath = openFileDialog.FileName;
                 string fileName = Path.GetFileNameWithoutExtension(selectedFilePath);
 
-                // Get the currently selected TabPage
                 TabPage currentTabPage = tabControl1.SelectedTab;
                 if (currentTabPage != null)
                 {
-                    // Find the WebView2 control in the selected TabPage
                     WebView2 webView2 = FindWebView2(currentTabPage);
                     if (webView2 != null)
                     {
-                        // Set the PDF file path
                         webView2.Source = new Uri(selectedFilePath);
                         CreateFolderForPdf(selectedFilePath);
 
@@ -79,6 +79,8 @@ namespace PdfNotetaker
             return null;
         }
 
+
+
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
@@ -95,20 +97,28 @@ namespace PdfNotetaker
             saveFileDialog.AddExtension = true;
             saveFileDialog.InitialDirectory = _folderPath;
 
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            if (_noteSavePath.Length == 0)
             {
-                string filePath = saveFileDialog.FileName;
-
-                try
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    File.WriteAllText(filePath, richTextBox1.Text);
-                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("An error occurred while saving the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                    string filePath = saveFileDialog.FileName;
+                    _noteSavePath = filePath; 
 
+                    try
+                    {
+                        File.WriteAllText(filePath, richTextBox1.Text);
+                        MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("An error occurred while saving the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                }
+            }else
+            {
+                GrantFileAccess(_noteSavePath, Environment.UserName); 
+                File.WriteAllText(_noteSavePath, richTextBox1.Text);
             }
         }
 
@@ -136,7 +146,7 @@ namespace PdfNotetaker
                 }
                 else
                 {
-                    MessageBox.Show("Folder already exists: " + pdfFolderPath, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    //MessageBox.Show("Folder already exists: " + pdfFolderPath, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 _folderPath = pdfFolderPath;
             }
@@ -153,53 +163,43 @@ namespace PdfNotetaker
 
         private void AddNewTabWithSplitContainer()
         {
-            // Create a new TabPage
             TabPage newTabPage = new TabPage($"Tab {tabControl1.TabPages.Count + 1}");
 
-            // Create a SplitContainer
             SplitContainer splitContainer = new SplitContainer
             {
                 Dock = DockStyle.Fill,
-                Orientation = Orientation.Vertical // Vertical split
+                Orientation = Orientation.Vertical 
             };
 
-            // Create and configure RichTextBox for the first panel
             RichTextBox richTextBox = new RichTextBox
             {
-                Name = $"RichTextBox_{tabControl1.TabPages.Count + 1}", // Name incremented
+                Name = $"RichTextBox_{tabControl1.TabPages.Count + 1}", 
                 Dock = DockStyle.Fill
             };
             splitContainer.Panel1.Controls.Add(richTextBox);
 
-            // Create and configure WebBrowser for the second panel
             WebView2 webBrowser = new WebView2
             {
-                Name = $"WebView2_{tabControl1.TabPages.Count + 1}", // Name incremented
+                Name = $"WebView2_{tabControl1.TabPages.Count + 1}", 
                 Dock = DockStyle.Fill
             };
             splitContainer.Panel2.Controls.Add(webBrowser);
 
-            // Add SplitContainer to the TabPage
             newTabPage.Controls.Add(splitContainer);
 
-            // Add the TabPage to the TabControl
             tabControl1.TabPages.Add(newTabPage);
         }
 
         private void ToggleDarkMode()
         {
-            // Toggle the dark mode flag
             isDarkMode = !isDarkMode;
 
-            // Set colors based on the dark mode flag
             Color backgroundColor = isDarkMode ? Color.FromArgb(30, 30, 30) : Color.White;
             Color foregroundColor = isDarkMode ? Color.White : Color.Black;
 
-            // Apply colors to the form
             BackColor = backgroundColor;
             ForeColor = foregroundColor;
 
-            // Apply colors to the tab control and tabs
             tabControl1.BackColor = backgroundColor;
             tabControl1.ForeColor = foregroundColor;
 
@@ -208,7 +208,6 @@ namespace PdfNotetaker
                 tabPage.BackColor = backgroundColor;
                 tabPage.ForeColor = foregroundColor;
 
-                // Apply colors to controls within each tab
                 ApplyDarkModeToControls(tabPage.Controls, backgroundColor, foregroundColor);
             }
         }
@@ -224,8 +223,8 @@ namespace PdfNotetaker
                 }
                 else if (control is WebView2 webView2)
                 {
-                    webView2.BackColor = backgroundColor; // WebView2 may need custom styling
-                    webView2.ForeColor = foregroundColor; // WebView2 may need custom styling
+                    webView2.BackColor = backgroundColor; 
+                    webView2.ForeColor = foregroundColor; 
                 }
                 else if (control is SplitContainer splitContainer)
                 {
@@ -252,7 +251,61 @@ namespace PdfNotetaker
 
         private void darkModeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ToggleDarkMode(); 
+            ToggleDarkMode();
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                if (!commandLine.Visible)
+                {
+                    commandLine.Visible = true;
+                    commandLine.Focus();
+                }
+            }
+        }
+
+        private void CommandLine_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                TextBox commandLine = (TextBox)sender;
+                string command = commandLine.Text;
+
+                HandleCommand(command);
+
+                commandLine.Clear();
+                commandLine.Visible = false;
+            }
+        }
+
+        private void HandleCommand(string command)
+        {
+            if (command == ":w")
+            {
+                SaveTextToFile(); 
+            }
+            else if (command == ":q")
+            {
+                this.Close();
+            }
+            else
+            {
+                ;
+            }
+        }
+
+        public static void GrantFileAccess(string filePath, string user)
+        {
+            FileInfo fileInfo = new FileInfo(filePath);
+            FileSecurity fileSecurity = fileInfo.GetAccessControl();
+
+            FileSystemAccessRule accessRule = new FileSystemAccessRule(user,
+                FileSystemRights.FullControl, AccessControlType.Allow);
+
+            fileSecurity.AddAccessRule(accessRule);
+            fileInfo.SetAccessControl(fileSecurity);
         }
     }
 }

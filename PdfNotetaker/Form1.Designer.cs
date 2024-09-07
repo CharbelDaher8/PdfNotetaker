@@ -34,12 +34,13 @@
             saveToolStripMenuItem = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
             addTabToolStripMenuItem = new ToolStripMenuItem();
+            darkModeToolStripMenuItem = new ToolStripMenuItem();
             tabPage1 = new TabPage();
             splitContainer1 = new SplitContainer();
             richTextBox1 = new RichTextBox();
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             tabControl1 = new TabControl();
-            darkModeToolStripMenuItem = new ToolStripMenuItem();
+            commandLine = new TextBox();
             menuStrip1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -90,9 +91,16 @@
             // addTabToolStripMenuItem
             // 
             addTabToolStripMenuItem.Name = "addTabToolStripMenuItem";
-            addTabToolStripMenuItem.Size = new Size(180, 22);
+            addTabToolStripMenuItem.Size = new Size(132, 22);
             addTabToolStripMenuItem.Text = "Add tab";
             addTabToolStripMenuItem.Click += addTabToolStripMenuItem_Click;
+            // 
+            // darkModeToolStripMenuItem
+            // 
+            darkModeToolStripMenuItem.Name = "darkModeToolStripMenuItem";
+            darkModeToolStripMenuItem.Size = new Size(132, 22);
+            darkModeToolStripMenuItem.Text = "Dark mode";
+            darkModeToolStripMenuItem.Click += darkModeToolStripMenuItem_Click;
             // 
             // tabPage1
             // 
@@ -100,7 +108,7 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1030, 779);
+            tabPage1.Size = new Size(1030, 754);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
@@ -118,7 +126,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(webView21);
-            splitContainer1.Size = new Size(1019, 770);
+            splitContainer1.Size = new Size(1019, 745);
             splitContainer1.SplitterDistance = 339;
             splitContainer1.TabIndex = 3;
             // 
@@ -128,7 +136,7 @@
             richTextBox1.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
             richTextBox1.Location = new Point(0, 0);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(339, 770);
+            richTextBox1.Size = new Size(339, 745);
             richTextBox1.TabIndex = 2;
             richTextBox1.Text = "";
             richTextBox1.TextChanged += richTextBox1_TextChanged;
@@ -141,7 +149,7 @@
             webView21.DefaultBackgroundColor = Color.White;
             webView21.Location = new Point(3, 3);
             webView21.Name = "webView21";
-            webView21.Size = new Size(670, 764);
+            webView21.Size = new Size(670, 739);
             webView21.TabIndex = 0;
             webView21.ZoomFactor = 1D;
             // 
@@ -152,27 +160,34 @@
             tabControl1.Location = new Point(12, 27);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1038, 807);
+            tabControl1.Size = new Size(1038, 782);
             tabControl1.TabIndex = 4;
+            tabControl1.KeyDown += Form1_KeyDown;
             // 
-            // darkModeToolStripMenuItem
+            // commandLine
             // 
-            darkModeToolStripMenuItem.Name = "darkModeToolStripMenuItem";
-            darkModeToolStripMenuItem.Size = new Size(180, 22);
-            darkModeToolStripMenuItem.Text = "Dark mode";
-            darkModeToolStripMenuItem.Click += darkModeToolStripMenuItem_Click;
+            commandLine.Dock = DockStyle.Bottom;
+            commandLine.Location = new Point(0, 818);
+            commandLine.Name = "commandLine";
+            commandLine.Size = new Size(1062, 23);
+            commandLine.TabIndex = 5;
+            commandLine.TabStop = false;
+            commandLine.Visible = false;
+            commandLine.KeyDown += CommandLine_KeyDown;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1062, 846);
+            ClientSize = new Size(1062, 841);
+            Controls.Add(commandLine);
             Controls.Add(tabControl1);
             Controls.Add(menuStrip1);
             MainMenuStrip = menuStrip1;
             Name = "Form1";
             Text = "Pdf Viewer";
             Load += Form1_Load;
+            KeyDown += Form1_KeyDown;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             tabPage1.ResumeLayout(false);
@@ -199,5 +214,6 @@
         private TabControl tabControl1;
         private ToolStripMenuItem addTabToolStripMenuItem;
         private ToolStripMenuItem darkModeToolStripMenuItem;
+        private TextBox commandLine;
     }
 }
