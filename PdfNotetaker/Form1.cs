@@ -9,15 +9,12 @@ namespace PdfNotetaker
     public partial class Form1 : Form
     {
         string _folderPath = "";
-        string _noteSavePath = ""; 
-        private bool isFormatting;
+        string _noteSavePath = "";
         private bool isDarkMode;
 
         public Form1()
         {
             InitializeComponent();
-            //webView21.Source = new Uri("C:\\Users\\Work 3\\Downloads\\Lasch_Christopher_The_Culture_of_Narcissism.pdf");
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -26,6 +23,11 @@ namespace PdfNotetaker
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openFolderSelector();
+        }
+
+        private void openFolderSelector()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "PDF files (*.pdf)|*.pdf";
@@ -42,7 +44,7 @@ namespace PdfNotetaker
                     if (webView2 != null)
                     {
                         webView2.Source = new Uri(selectedFilePath);
-                        CreateFolderForPdf(selectedFilePath);
+                        CreateFolderForPdf(selectedFilePath, currentTabPage);
 
                         currentTabPage.Text = fileName;
                     }
@@ -79,6 +81,26 @@ namespace PdfNotetaker
             return null;
         }
 
+        private RichTextBox FindRichTextBox(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is RichTextBox richTextBox)
+                {
+                    return richTextBox;
+                }
+
+                if (control.HasChildren)
+                {
+                    RichTextBox found = FindRichTextBox(control);
+                    if (found != null)
+                    {
+                        return found;
+                    }
+                }
+            }
+            return null;
+        }
 
 
         private void richTextBox1_TextChanged(object sender, EventArgs e)
@@ -91,47 +113,37 @@ namespace PdfNotetaker
         }
         private void SaveTextToFile()
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text Files (*.txt)|*.txt";
-            saveFileDialog.DefaultExt = "txt";
-            saveFileDialog.AddExtension = true;
-            saveFileDialog.InitialDirectory = _folderPath;
 
             if (_noteSavePath.Length == 0)
             {
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                string filePath = _folderPath + "Notes.txt";
+                _noteSavePath = filePath;
+
+                try
                 {
-                    string filePath = saveFileDialog.FileName;
-                    _noteSavePath = filePath; 
-
-                    try
-                    {
-                        File.WriteAllText(filePath, richTextBox1.Text);
-                        MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("An error occurred while saving the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
+                    File.WriteAllText(filePath, richTextBox1.Text);
+                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-            }else
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred while saving the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+            }
+            else
             {
-                GrantFileAccess(_noteSavePath, Environment.UserName); 
+                GrantFileAccess(_noteSavePath, Environment.UserName);
                 File.WriteAllText(_noteSavePath, richTextBox1.Text);
             }
         }
 
-        private void CreateFolderForPdf(string pdfFilePath)
+        private void CreateFolderForPdf(string pdfFilePath, TabPage currentTabPage)
         {
             try
             {
                 string pdfFileName = Path.GetFileNameWithoutExtension(pdfFilePath);
-
                 string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
                 string pdfViewerFolder = Path.Combine(documentsPath, "PdfViewer");
-
                 string pdfFolderPath = Path.Combine(pdfViewerFolder, pdfFileName);
 
                 if (!Directory.Exists(pdfViewerFolder))
@@ -146,7 +158,20 @@ namespace PdfNotetaker
                 }
                 else
                 {
-                    //MessageBox.Show("Folder already exists: " + pdfFolderPath, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string notesFilePath = Path.Combine(pdfFolderPath, "Notes.txt");
+
+                    if (File.Exists(notesFilePath))
+                    {
+                        var textbox = FindRichTextBox(currentTabPage);
+                        // Read all the content of the Notes.txt file
+                        string fileContent = File.ReadAllText(notesFilePath);
+
+                        if (textbox != null)
+                        {
+                            textbox.Text = fileContent;
+                        }
+
+                    }
                 }
                 _folderPath = pdfFolderPath;
             }
@@ -168,19 +193,19 @@ namespace PdfNotetaker
             SplitContainer splitContainer = new SplitContainer
             {
                 Dock = DockStyle.Fill,
-                Orientation = Orientation.Vertical 
+                Orientation = Orientation.Vertical
             };
 
             RichTextBox richTextBox = new RichTextBox
             {
-                Name = $"RichTextBox_{tabControl1.TabPages.Count + 1}", 
+                Name = $"RichTextBox_{tabControl1.TabPages.Count + 1}",
                 Dock = DockStyle.Fill
             };
             splitContainer.Panel1.Controls.Add(richTextBox);
 
             WebView2 webBrowser = new WebView2
             {
-                Name = $"WebView2_{tabControl1.TabPages.Count + 1}", 
+                Name = $"WebView2_{tabControl1.TabPages.Count + 1}",
                 Dock = DockStyle.Fill
             };
             splitContainer.Panel2.Controls.Add(webBrowser);
@@ -223,8 +248,8 @@ namespace PdfNotetaker
                 }
                 else if (control is WebView2 webView2)
                 {
-                    webView2.BackColor = backgroundColor; 
-                    webView2.ForeColor = foregroundColor; 
+                    webView2.BackColor = backgroundColor;
+                    webView2.ForeColor = foregroundColor;
                 }
                 else if (control is SplitContainer splitContainer)
                 {
@@ -264,6 +289,16 @@ namespace PdfNotetaker
                     commandLine.Focus();
                 }
             }
+            else if (e.Control && e.KeyCode == Keys.T)
+            {
+                AddNewTabWithSplitContainer();
+            }
+            else if (e.Control && e.KeyCode == Keys.W)
+            {
+                if (tabControl1.SelectedIndex >= 0)
+                    tabControl1.TabPages.RemoveAt(tabControl1.SelectedIndex);
+            }
+
         }
 
         private void CommandLine_KeyDown(object sender, KeyEventArgs e)
@@ -284,11 +319,20 @@ namespace PdfNotetaker
         {
             if (command == ":w")
             {
-                SaveTextToFile(); 
+                SaveTextToFile();
             }
             else if (command == ":q")
             {
                 this.Close();
+            }
+            else if (command == ":wq")
+            {
+                SaveTextToFile();
+                this.Close();
+            }
+            else if (command == ":o")
+            {
+                openFolderSelector();
             }
             else
             {
@@ -306,6 +350,12 @@ namespace PdfNotetaker
 
             fileSecurity.AddAccessRule(accessRule);
             fileInfo.SetAccessControl(fileSecurity);
+        }
+
+        private void viewPDFsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PdfViewForm pdfViewForm = new PdfViewForm();
+            pdfViewForm.ShowDialog();
         }
     }
 }

@@ -41,6 +41,7 @@
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             tabControl1 = new TabControl();
             commandLine = new TextBox();
+            viewPDFsToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -83,7 +84,7 @@
             // 
             // viewToolStripMenuItem
             // 
-            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addTabToolStripMenuItem, darkModeToolStripMenuItem });
+            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { addTabToolStripMenuItem, darkModeToolStripMenuItem, viewPDFsToolStripMenuItem });
             viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             viewToolStripMenuItem.Size = new Size(44, 20);
             viewToolStripMenuItem.Text = "View";
@@ -91,14 +92,14 @@
             // addTabToolStripMenuItem
             // 
             addTabToolStripMenuItem.Name = "addTabToolStripMenuItem";
-            addTabToolStripMenuItem.Size = new Size(132, 22);
+            addTabToolStripMenuItem.Size = new Size(180, 22);
             addTabToolStripMenuItem.Text = "Add tab";
             addTabToolStripMenuItem.Click += addTabToolStripMenuItem_Click;
             // 
             // darkModeToolStripMenuItem
             // 
             darkModeToolStripMenuItem.Name = "darkModeToolStripMenuItem";
-            darkModeToolStripMenuItem.Size = new Size(132, 22);
+            darkModeToolStripMenuItem.Size = new Size(180, 22);
             darkModeToolStripMenuItem.Text = "Dark mode";
             darkModeToolStripMenuItem.Click += darkModeToolStripMenuItem_Click;
             // 
@@ -175,6 +176,13 @@
             commandLine.Visible = false;
             commandLine.KeyDown += CommandLine_KeyDown;
             // 
+            // viewPDFsToolStripMenuItem
+            // 
+            viewPDFsToolStripMenuItem.Name = "viewPDFsToolStripMenuItem";
+            viewPDFsToolStripMenuItem.Size = new Size(180, 22);
+            viewPDFsToolStripMenuItem.Text = "View PDFs";
+            viewPDFsToolStripMenuItem.Click += viewPDFsToolStripMenuItem_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -215,5 +223,6 @@
         private ToolStripMenuItem addTabToolStripMenuItem;
         private ToolStripMenuItem darkModeToolStripMenuItem;
         private TextBox commandLine;
+        private ToolStripMenuItem viewPDFsToolStripMenuItem;
     }
 }
